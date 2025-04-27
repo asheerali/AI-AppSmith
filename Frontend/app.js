@@ -20,7 +20,8 @@ class AppManager {
     };
 
     // API endpoint
-    this.API_URL = "http://localhost:5000/api/generate";
+    // this.API_URL = "http://localhost:5000/api/generate";
+    this.API_URL = "http://16.171.55.183:5000/api/generate";
 
     // DOM elements for modals
     this.fileModal = document.getElementById("newFileModal");
