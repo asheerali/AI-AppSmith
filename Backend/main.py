@@ -44,7 +44,7 @@ def generate_code_with_gemini(prompt: str, current_file: str, current_content: s
     
     # Base contexts for different file types
     context_map = {
-        'html': """You are an expert UI/UX web developer specializing in beautiful, modern HTML layouts.
+        "html": """You are an expert UI/UX web developer specializing in beautiful, modern HTML layouts.
 
 Your task is to create professional-grade HTML that follows these principles:
 - Use semantic HTML5 elements (header, nav, main, section, article, footer)
@@ -57,9 +57,9 @@ Your task is to create professional-grade HTML that follows these principles:
 Focus on creating a visually impressive UI that resembles professional websites.
 The design should feel modern, clean, and incorporate current web design trends.
 
-Important: Return ONLY the HTML code without any explanations, comments about the code, or markdown formatting.""",
+***Important: Return ONLY the code without any explanations, comments about the code, or markdown formatting.""",
         
-        'css': """You are an expert CSS designer who creates stunning, professional-grade stylesheets.
+        "css": """You are an expert CSS designer who creates stunning, professional-grade stylesheets.
 
 Your task is to craft beautiful CSS that follows these principles:
 - Use modern CSS features (flexbox, grid, CSS variables, etc.)
@@ -77,7 +77,7 @@ Focus on creating a premium visual experience with:
 - Subtle shadows, rounded corners, and other refined details
 - Smooth transitions and micro-interactions
 
-Important: Return ONLY the CSS code without any explanations, comments, or markdown formatting.""",
+***Important: Return ONLY the CSS code without any explanations, comments, or markdown formatting.""",
         
         'js': """You are an expert JavaScript developer specializing in creating interactive, high-quality web experiences.
 
@@ -98,7 +98,7 @@ Focus on enhancing the user experience with:
 - Subtle animations and transitions
 - Responsive behavior adjustments
 
-Important: Return ONLY the JavaScript code without any explanations, comments about the code, or markdown formatting."""
+***: Return ONLY the JavaScript code without any explanations, comments about the code, or markdown formatting."""
     }
     
     # Get base context for the file type
@@ -111,15 +111,24 @@ Important: Return ONLY the JavaScript code without any explanations, comments ab
     - Use a modern, clean aesthetic with appropriate white space
     - Create a visually balanced layout with clear visual hierarchy
     - Implement subtle animations and transitions for a polished feel
-    - Use a cohesive, attractive color scheme (prefer modern color combinations)
+    - Use a cohesive, attractive color scheme (prefer modern color combinations) 
+    - Use the same coloring you used in the previous response (if applicable) for the consistency
     - Include responsive behaviors for all screen sizes
     - Add appropriate hover/focus states for interactive elements
     - Consider accessibility in all design decisions
-    - For any image placeholder, do not add actual image files.
+    - For any image placeholder, do not add actual image files (if the user asks for the images).
     Instead, use a gray gradient box with centered descriptive text (e.g., 'Image Placeholder') styled appropriately.
 
     The resulting code should create a professional-looking UI that resembles
     high-quality websites and applications found in 2024.
+    
+    ***impotant: donot return any extra text like in the below example:
+    # html
+    #<!DOCTYPE html>
+    #<html lang="en">
+    #<head>
+    #<meta charset="UTF-8">........ 
+    just retun without the html text only the code
     """
 
     
@@ -169,6 +178,8 @@ Important: Return ONLY the JavaScript code without any explanations, comments ab
                     cleaned_lines.append(line)
             
             generated_code = '\n'.join(cleaned_lines).strip()
+            
+            print(generate_code)
         
         return generated_code
     except Exception as e:
@@ -176,12 +187,12 @@ Important: Return ONLY the JavaScript code without any explanations, comments ab
     
 
 # Mount the frontend folder to serve static assets
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+app.mount("/static", StaticFiles(directory="../Frontend"), name="static")
 
 # Serve the main page at "/"
 @app.get("/")
 async def read_index():
-    return FileResponse("../frontend/index.html")
+    return FileResponse("../Frontend/index.html")
 
 # Endpoint for code generation
 @app.post("/api/generate", response_model=CodeGenerationResponse)
@@ -198,8 +209,16 @@ async def generate_code(request: CodeGenerationRequest):
         
         print(f"Generated code for {request.currentFile} (first 100 chars):")
         print(generated_code[:100] + "...")
-        
+        # Save generated code to a text file (overwrite if exists)
+        output_file_path = "generated_code.txt"
+
+        with open(output_file_path, "w", encoding="utf-8") as f:
+            f.write(generated_code)
+
+        # Then return as usual
         return {"code": generated_code}
+
+        # return {"code": generated_code}
     except Exception as e:
         print(f"Error in generate_code: {e}")
         raise HTTPException(status_code=500, detail=str(e))
