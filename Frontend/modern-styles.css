@@ -1,10 +1,10 @@
 /* ------------------------------------------------------------------
-   Modern Dark Theme with Vibrant Orange Accent
+   Modern Dark Theme with Vibrant blue Accent
    ------------------------------------------------------------------ */
 
 /* VS Code-like syntax colors (editor) */
 .code-output {
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: "Consolas", "Courier New", monospace;
   font-size: 14px;
   line-height: 1.5;
   color: #d4d4d4;
@@ -45,12 +45,12 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   padding: 15px 20px;
   border-radius: 4px;
   z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   transition: opacity 0.5s;
 }
 
@@ -61,59 +61,60 @@
 /* Responsive styling */
 @media (max-width: 1200px) {
   .sidebar {
-      width: 180px;
+    width: 180px;
   }
-  
+
   :root {
-      --sidebar-width: 180px;
+    --sidebar-width: 180px;
   }
 }
 @media (max-width: 992px) {
   .main-container {
-      flex-direction: column;
+    flex-direction: column;
   }
   .sidebar {
-      width: 100%;
-      height: 200px;
+    width: 100%;
+    height: 200px;
   }
-  .editor-container, .preview-container {
-      width: 100%;
-      height: calc((100vh - 200px) / 2);
+  .editor-container,
+  .preview-container {
+    width: 100%;
+    height: calc((100vh - 200px) / 2);
   }
 }
 
 /* ------------------------------------------------------------------
- Dark Theme Variables (Near-black + Vibrant Orange)
+ Dark Theme Variables (Near-black + Vibrant blue)
  ------------------------------------------------------------------ */
 :root {
   /* Primary near-black backgrounds */
-  --bg-dark: #121212;          /* Main background */
-  --bg-darker: #1A1A1A;        /* Slightly darker or same-level panel */
-  --bg-lighter: #242424;       /* Lighter dark gray for contrast/panels */
-  
+  --bg-dark: #121212; /* Main background */
+  --bg-darker: #1a1a1a; /* Slightly darker or same-level panel */
+  --bg-lighter: #242424; /* Lighter dark gray for contrast/panels */
+
   /* Text colors */
-  --text-light: #ffffff;       /* Primary text: white */
-  --text-muted: #aaaaaa;       /* Secondary/hint text */
-  
-  /* Orange accent color for highlights, buttons, etc. */
-  --accent-orange: #FF6600;    /* Vibrant orange */
-  --accent-orange-hover: #FF7A00; /* Slightly lighter or darker variant */
-  
+  --text-light: #ffffff; /* Primary text: white */
+  --text-muted: #aaaaaa; /* Secondary/hint text */
+
+  /* blue accent color for highlights, buttons, etc. */
+  --accent-blue: #0066ff; /* Vibrant blue */
+  --accent-blue-hover: #338eff; /* Slightly lighter or darker variant */
+
   /* Border & code coloration */
   --border-color: #333;
-  --code-color: #acacac;       /* For editor text coloring */
-  
+  --code-color: #acacac; /* For editor text coloring */
+
   /* Layout sizing */
   --sidebar-width: 220px;
-  --editor-width: calc(50% - var(--sidebar-width)/2);
-  --preview-width: calc(50% - var(--sidebar-width)/2);
+  --editor-width: calc(50% - var(--sidebar-width) / 2);
+  --preview-width: calc(50% - var(--sidebar-width) / 2);
 }
 
 /* ------------------------------------------------------------------
  Global Body & Container
  ------------------------------------------------------------------ */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
   background-color: var(--bg-dark);
@@ -147,19 +148,22 @@ body {
   margin: 0;
   font-size: 16px;
   font-weight: normal;
+  color: var(--text-light);
 }
 
 .sidebar-content {
   padding: 10px 0;
 }
 
-.folder-list, .file-list {
+.folder-list,
+.file-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  /* color: var(--text-light); */
 }
 
-.folder {
+/* .folder {
   padding: 6px 15px;
   cursor: pointer;
   color: var(--text-light);
@@ -167,33 +171,46 @@ body {
   align-items: center;
   flex-wrap: wrap;
   transition: background-color 0.2s ease;
+} */
+.folder {
+  padding: 6px 15px;
+  cursor: pointer;
+  color: var(--test-text);
+  display: block; /* ✅ block instead of flex */
 }
+
 .folder:hover {
   background-color: var(--bg-lighter);
 }
 .folder.active {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-blue);
   color: #fff;
 }
+/* 
+.folder-icon {
+  margin-right: 8px;
+  font-size: 10px;
+} */
 
 .folder-icon {
   margin-right: 8px;
   font-size: 10px;
+  display: inline-block; /* ensure icon stays before text */
 }
 
 .file {
   padding: 4px 0 4px 30px;
   cursor: pointer;
-  color: var(--text-light);
+  color: var(--test-text);
   transition: background-color 0.2s ease;
 }
 .file:hover {
   background-color: var(--bg-lighter);
 }
 .file.active-file {
-  color: #ffffff;
+  color: var(--white);
   font-weight: 500;
-  background-color: #333333;
+  /* background-color: #333333; */
 }
 
 /* ------------------------------------------------------------------
@@ -234,6 +251,7 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-right: 8px;
+  color: var(--white);
 }
 .tab-close {
   color: var(--text-muted);
@@ -279,7 +297,7 @@ body {
   padding: 10px 10px 10px 20px;
   text-align: right;
   color: var(--text-muted);
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 14px;
   background-color: var(--bg-dark);
   user-select: none;
@@ -299,7 +317,7 @@ body {
   max-height: calc(100vh - 50px - 50px);
 }
 .code-output {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 14px;
   line-height: 1.5;
   color: var(--code-color);
@@ -339,7 +357,7 @@ body {
   height: 36px;
 }
 .generate-btn {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-blue);
   color: #fff;
   border: none;
   padding: 6px 16px;
@@ -350,7 +368,8 @@ body {
   transition: background-color 0.2s ease;
 }
 .generate-btn:hover {
-  background-color: var(--accent-orange-hover);
+  background-color: var(--accent-blue-hover);
+  color: #fff;
 }
 
 /* ------------------------------------------------------------------
@@ -363,12 +382,24 @@ body {
   flex-direction: column;
   height: 100vh;
 }
-.preview-header {
+/* .preview-header {
   background-color: var(--bg-darker);
   color: var(--text-light);
   padding: 8px 15px;
   border-bottom: 1px solid var(--border-color);
+} */
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-darker);
+  color: var(--text-light);
+  padding: 8px 15px;
+  border-bottom: 1px solid var(--border-color);
+  justify-content: flex-end;
 }
+
 .preview-header h4 {
   margin: 0;
   font-size: 14px;
@@ -378,7 +409,7 @@ body {
   flex: 1;
   padding: 0;
   overflow-y: auto;
-  background-color: #1A1A1A;
+  background-color: #1a1a1a;
   color: #ffffff;
 }
 .preview-text {
@@ -404,7 +435,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
   align-items: center;
   justify-content: center;
@@ -417,7 +448,7 @@ body {
   border-radius: 6px;
   width: 400px;
   max-width: 90%;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 .modal-header {
   padding: 15px;
@@ -425,6 +456,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-light);
 }
 .modal-header h4 {
   margin: 0;
@@ -438,7 +470,7 @@ body {
   transition: color 0.2s ease;
 }
 .close-modal:hover {
-  color: var(--accent-orange);
+  color: var(--accent-blue);
 }
 .modal-body {
   padding: 20px;
@@ -452,7 +484,7 @@ body {
   font-size: 14px;
   color: var(--text-light);
 }
-.input-group input, 
+.input-group input,
 .input-group select {
   width: 100%;
   padding: 8px;
@@ -480,17 +512,24 @@ body {
   transition: color 0.2s ease;
 }
 .cancel-btn:hover {
-  color: var(--accent-orange);
+  color: var(--accent-blue);
 }
 .create-btn {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-blue);
   color: #fff;
   transition: background-color 0.2s ease;
 }
 .create-btn:hover {
-  background-color: var(--accent-orange-hover);
+  background-color: var(--accent-blue-hover);
 }
 
+.color-select {
+  background-color: rgb(232, 232, 232);
+  color: gray;
+}
+.color-select-text {
+  color: gray;
+}
 /* Spinner styling */
 .spinner-border {
   margin-right: 8px;
@@ -546,10 +585,11 @@ body {
   gap: 10px;
 }
 .download-btn {
-  background-color: var(--accent-orange);
-  color: white;
+  background-color: var(--test);
+  color: rgb(255, 255, 255);
   border: none;
   padding: 6px 16px;
+  margin-left: 7px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
@@ -559,7 +599,7 @@ body {
   transition: background-color 0.2s ease;
 }
 .download-btn:hover {
-  background-color: var(--accent-orange-hover);
+  background-color: var(--test-hover);
 }
 .download-icon {
   width: 16px;
@@ -573,6 +613,7 @@ body {
   color: var(--text-light);
   border: 1px solid var(--border-color);
   padding: 6px 12px;
+  margin-left: 7px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
@@ -582,7 +623,7 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 .controls-btn:hover {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-blue-hover);
   color: #ffffff;
 }
 .controls-menu {
@@ -630,6 +671,24 @@ body {
   align-items: center;
   justify-content: center;
 }
+/* Add template button */
+.add-template-btn {
+  background-color: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+.add-template-btn svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+  vertical-align: -3px;
+}
 .template-modal-content {
   width: 80%;
   max-width: 900px;
@@ -655,11 +714,12 @@ body {
 }
 .template-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  border-color: var(--accent-orange);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent-blue);
 }
 .template-card-header {
-  background-color: var(--accent-orange);
+  background-color: rgb(79, 134, 198);
+
   color: white;
   padding: 12px 15px;
   font-weight: 500;
@@ -669,6 +729,8 @@ body {
   padding: 15px;
   color: var(--text-light);
   font-size: 14px;
+  color: gray;
+  background-color: rgb(255, 255, 255);
 }
 
 /* Template prompt preview panel */
@@ -688,7 +750,7 @@ body {
 .prompt-preview-header h3 {
   margin: 0 0 8px 0;
   font-size: 18px;
-  color: var(--accent-orange);
+  color: var(--accent-blue);
 }
 .prompt-preview-header p {
   margin: 0;
@@ -709,7 +771,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 10px;
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: "Consolas", "Courier New", monospace;
   font-size: 14px;
   line-height: 1.5;
   resize: none;
@@ -730,12 +792,12 @@ body {
   transition: all 0.3s ease;
 }
 .update-prompt-btn.active {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-blue);
   color: white;
-  border-color: var(--accent-orange);
+  border-color: var(--accent-blue);
 }
 .update-prompt-btn:hover {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-blue);
   color: white;
 }
 
@@ -744,12 +806,12 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: var(--accent-orange);
+  background-color: var(--accent-blue);
   color: white;
   padding: 10px 20px;
   border-radius: 4px;
   z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   transition: opacity 0.5s;
 }
 .prompt-update-notification.fade-out {
@@ -758,7 +820,7 @@ body {
 
 /* Enhance template modal styles */
 .template-modal-content {
-  border: 1px solid var(--accent-orange);
+  border: 1px solid var(--accent-blue);
   border-radius: 6px;
 }
 .template-grid {
@@ -768,7 +830,7 @@ body {
   background-color: var(--bg-dark);
 }
 .template-card:hover {
-  border-color: var(--accent-orange);
+  border-color: var(--accent-blue);
 }
 
 /* Template prompt popup styles */
@@ -807,7 +869,7 @@ body {
 }
 .prompt-popup-header h3 {
   margin: 0;
-  color: var(--accent-orange);
+  color: var(--accent-blue);
   font-size: 18px;
 }
 .close-prompt-popup {
@@ -835,7 +897,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 10px;
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: "Consolas", "Courier New", monospace;
   font-size: 14px;
   line-height: 1.5;
   resize: vertical;
@@ -858,7 +920,7 @@ body {
   transition: all 0.3s ease;
 }
 .update-prompt-btn:hover {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-blue);
   color: white;
 }
 
@@ -885,7 +947,8 @@ body {
   min-width: 0 !important; /* Prevent overflow issues */
 }
 /* Reset any conflicting styles */
-.flex-row, .flex-col {
+.flex-row,
+.flex-col {
   display: block !important;
   width: auto !important;
 }
@@ -899,7 +962,9 @@ body {
     flex-direction: column;
     height: auto;
   }
-  .sidebar, .editor-container, .preview-container {
+  .sidebar,
+  .editor-container,
+  .preview-container {
     width: 100%;
     height: auto;
   }
@@ -912,15 +977,18 @@ body {
   .preview-container {
     order: 3;
   }
-  .code-editor, .line-numbers {
+  .code-editor,
+  .line-numbers {
     max-height: 300px;
   }
   .project-controls {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    /* flex-direction: column; */
+    /* align-items: flex-start; */
+    display: flex;
+    align-items: center;
+    gap: 5px;
     position: static;
-    padding: 10px;
+    padding: 5px;
   }
   .editor-tabs {
     flex-wrap: wrap;

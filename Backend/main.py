@@ -7,26 +7,13 @@ import google.generativeai as genai
 from fastapi.responses import PlainTextResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
-
 # Load environment variables
 load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI()
 
-# Mount the static frontend folder
-# app.mount("/static", StaticFiles(directory="../frontend"), name="static")
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
-
-# Serve the main page at "/"
-@app.get("/")
-async def read_index():
-    return FileResponse("frontend/index.html")
-
-# @app.get("/", response_class=PlainTextResponse)
-# async def root():
-#     return "response ok"
 
 # Add CORS middleware
 app.add_middleware(
@@ -186,8 +173,15 @@ Important: Return ONLY the JavaScript code without any explanations, comments ab
         return generated_code
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API error: {str(e)}")
+    
 
+# Mount the frontend folder to serve static assets
+app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 
+# Serve the main page at "/"
+@app.get("/")
+async def read_index():
+    return FileResponse("../frontend/index.html")
 
 # Endpoint for code generation
 @app.post("/api/generate", response_model=CodeGenerationResponse)
