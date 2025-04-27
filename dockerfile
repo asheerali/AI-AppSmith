@@ -1,26 +1,23 @@
-# Stage 1: Build the frontend
-FROM nginx:alpine AS frontend
+FROM python:3.11-slim
 
-# Copy frontend files
-COPY frontend /usr/share/nginx/html
-
-# Expose port for frontend
-EXPOSE 80
-
-# Stage 2: Build the backend
-FROM python:3.9-slim AS backend
-
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy backend files
-COPY backend /app
+# Copy requirements (if exists)
+COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port for backend
-EXPOSE 8000
+# Copy entire project (adjust if needed)
+COPY . .
+
+# Change working directory to backend
+WORKDIR /app/backend
+
+
+# Expose port 8000
+EXPOSE 5000
 
 # Command to run the backend
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--reload" , "--host", "0.0.0.0", "--port", "5000"]
