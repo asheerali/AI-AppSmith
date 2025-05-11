@@ -1,19 +1,28 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import google.generativeai as genai
-from fastapi.responses import PlainTextResponse, FileResponse
+from fastapi.responses import PlainTextResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+import logging
+import pathlib
+from fastapi.templating import Jinja2Templates
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
 
+# Get the current directory
+current_dir = pathlib.Path(__file__).parent.resolve()
+frontend_dir = current_dir.parent / "Frontend"
+
 # Initialize FastAPI app
 app = FastAPI()
-
-
 
 # Add CORS middleware
 app.add_middleware(
@@ -25,7 +34,11 @@ app.add_middleware(
 )
 
 # Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    logger.warning("GEMINI_API_KEY not found in environment variables. API calls will fail.")
+else:
+    genai.configure(api_key=api_key)
 
 # Request model for code generation
 class CodeGenerationRequest(BaseModel):
@@ -98,14 +111,13 @@ Focus on enhancing the user experience with:
 - Subtle animations and transitions
 - Responsive behavior adjustments
 
-***: Return ONLY the JavaScript code without any explanations, comments about the code, or markdown formatting."""
+***Important: Return ONLY the JavaScript code without any explanations, comments about the code, or markdown formatting."""
     }
     
     # Get base context for the file type
     base_context = context_map.get(file_type, 'You are an expert web developer.')
     
     # Add UI/UX guidance
-   # Add UI/UX guidance
     ui_guidance = """
     UI/UX guidance:
     - Use a modern, clean aesthetic with appropriate white space
@@ -122,7 +134,7 @@ Focus on enhancing the user experience with:
     The resulting code should create a professional-looking UI that resembles
     high-quality websites and applications found in 2024.
     
-    ***impotant: donot return any extra text like in the below example:
+    ***important: donot return any extra text like in the below example:
     # html
     #<!DOCTYPE html>
     #<html lang="en">
@@ -159,6 +171,10 @@ Focus on enhancing the user experience with:
         # Generate the response
         response = model.generate_content(full_prompt)
         
+        print("Full Gemini response:")
+        print(repr(response.text))
+
+        
         # Extract the generated code
         generated_code = response.text.strip()
         
@@ -178,21 +194,18 @@ Focus on enhancing the user experience with:
                     cleaned_lines.append(line)
             
             generated_code = '\n'.join(cleaned_lines).strip()
-            
-            print(generate_code)
         
         return generated_code
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API error: {str(e)}")
-    
 
-# Mount the frontend folder to serve static assets
-app.mount("/static", StaticFiles(directory="../Frontend"), name="static")
+# Mount static files directory
+app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
 
 # Serve the main page at "/"
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def read_index():
-    return FileResponse("../Frontend/index.html")
+    return FileResponse(str(frontend_dir / "index.html"))
 
 # Endpoint for code generation
 @app.post("/api/generate", response_model=CodeGenerationResponse)
@@ -209,20 +222,28 @@ async def generate_code(request: CodeGenerationRequest):
         
         print(f"Generated code for {request.currentFile} (first 100 chars):")
         print(generated_code[:100] + "...")
-        # Save generated code to a text file (overwrite if exists)
+        
+        # Save generated code to a text file (for debugging)
         output_file_path = "generated_code.txt"
-
         with open(output_file_path, "w", encoding="utf-8") as f:
             f.write(generated_code)
-
-        # Then return as usual
+        
         return {"code": generated_code}
-
-        # return {"code": generated_code}
     except Exception as e:
         print(f"Error in generate_code: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)
+# Catch-all route for any other path (to handle direct routes)
+@app.get("/{path:path}", response_class=HTMLResponse)
+async def catch_all(path: str):
+    # Check if file exists in static directory
+    file_path = frontend_dir / path
+    if file_path.exists() and file_path.is_file():
+        return FileResponse(str(file_path))
+    
+    # Otherwise, serve the index.html (for SPA routing)
+    return FileResponse(str(frontend_dir / "index.html"))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)
