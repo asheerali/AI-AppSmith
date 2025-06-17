@@ -80,17 +80,10 @@
         <!-- Right preview panel -->
         <div class="preview-container">
           <!-- Replace the preview-header section in your index.html -->
+<!-- Replace your preview-header section with this -->
 <div class="preview-header">
-    <!-- Add the missing download project button -->
-    <button id="downloadProjectBtn" class="download-btn">
-        <svg class="download-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        Download ZIP
-    </button>
-
+    <!-- Download ZIP button removed -->
+    
     <button id="templateBtn" class="download-btn">New Template</button>
     <button id="openGeneralGenerator" class="download-btn">✨ Design Website</button>
         
@@ -105,12 +98,17 @@
         </button>
         
         <div id="controlsMenu" class="controls-menu">
+            <!-- You can keep the download options in the dropdown menu if needed -->
             <div class="controls-menu-item" id="downloadCurrentBtn">Download Current File</div>
             <div class="controls-menu-item" id="exportHtmlBtn">Export as Single HTML</div>
+            <!-- Add this if you want project download in the dropdown -->
+            <div class="controls-menu-item" id="downloadProjectDropdown">Download Project ZIP</div>
         </div>
     </div>
 </div>
-            <div class="preview-content" id="previewContent"></div>
+
+
+          <div class="preview-content" id="previewContent"></div>
         </div>
     </div>
     
