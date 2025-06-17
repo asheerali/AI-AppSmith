@@ -200,16 +200,40 @@ class AppManager {
       });
     }
   }
+  // Complete download fix for app.js
+  // Replace your entire initDownloadButtons and downloadProject methods with these:
 
-  // Initialize download buttons
   initDownloadButtons() {
-    const downloadBtn = document.getElementById("downloadProjectBtn");
+    console.log("Initializing download buttons...");
+
+    // Find the download button (try multiple possible IDs)
+    let downloadBtn =
+      document.getElementById("downloadProjectBtn") ||
+      document.querySelector(".download-btn") ||
+      document.querySelector('[href*="download"]') ||
+      document.querySelector('button:contains("Download")');
+
+    console.log("Download button found:", !!downloadBtn);
+
     if (downloadBtn) {
-      downloadBtn.addEventListener("click", () => {
+      // Remove any existing listeners
+      downloadBtn.replaceWith(downloadBtn.cloneNode(true));
+      downloadBtn =
+        document.getElementById("downloadProjectBtn") ||
+        document.querySelector(".download-btn");
+
+      downloadBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log("Download project button clicked");
         this.downloadProject();
       });
+      console.log("Download button listener attached");
+    } else {
+      console.warn("Download button not found, creating one...");
+      this.createDownloadButton();
     }
 
+    // Other buttons
     const downloadCurrentBtn = document.getElementById("downloadCurrentBtn");
     if (downloadCurrentBtn) {
       downloadCurrentBtn.addEventListener("click", () => {
@@ -223,6 +247,578 @@ class AppManager {
       exportHtmlBtn.addEventListener("click", () => {
         this.exportAsSingleHtml();
       });
+    }
+  }
+
+  // createDownloadButton() {
+  //   const previewHeader = document.querySelector(".preview-header");
+  //   if (previewHeader) {
+  //     const downloadBtn = document.createElement("button");
+  //     downloadBtn.id = "downloadProjectBtn";
+  //     downloadBtn.className = "download-btn";
+  //     downloadBtn.innerHTML = `
+  //     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  //       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+  //       <polyline points="7 10 12 15 17 10"></polyline>
+  //       <line x1="12" y1="15" x2="12" y2="3"></line>
+  //     </svg>
+  //     Download ZIP
+  //   `;
+
+  //     previewHeader.insertBefore(downloadBtn, previewHeader.firstChild);
+
+  //     downloadBtn.addEventListener("click", (e) => {
+  //       e.preventDefault();
+  //       console.log("Created download button clicked");
+  //       this.downloadProject();
+  //     });
+
+  //     console.log("Download button created and added");
+  //   }
+  // }
+
+  async downloadProject() {
+    console.log("=== STARTING DOWNLOAD PROJECT ===");
+
+    try {
+      // Check if we're in the right context
+      if (!this.projectFiles) {
+        console.error("this.projectFiles is undefined");
+        console.log("this:", this);
+        throw new Error("Project files not found");
+      }
+
+      console.log("Project files available:", Object.keys(this.projectFiles));
+
+      // Check libraries with detailed info
+      console.log("JSZip type:", typeof JSZip);
+      console.log("saveAs type:", typeof saveAs);
+
+      if (typeof JSZip === "undefined") {
+        console.error("JSZip library not loaded");
+        alert("JSZip library not found. Please check if the script is loaded.");
+        return;
+      }
+
+      if (typeof saveAs === "undefined") {
+        console.error("FileSaver library not loaded");
+        alert(
+          "FileSaver library not found. Please check if the script is loaded."
+        );
+        return;
+      }
+
+      console.log("✓ All libraries loaded");
+
+      // Create ZIP
+      console.log("Creating new JSZip instance...");
+      const zip = new JSZip();
+
+      let fileCount = 0;
+      for (const [fileName, fileData] of Object.entries(this.projectFiles)) {
+        console.log(`Adding file: ${fileName}`);
+        console.log(
+          `Content preview: ${fileData.content.substring(0, 100)}...`
+        );
+        zip.file(fileName, fileData.content);
+        fileCount++;
+      }
+
+      console.log(`✓ Added ${fileCount} files to ZIP`);
+
+      // Generate ZIP
+      console.log("Generating ZIP blob...");
+      const zipBlob = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: {
+          level: 6,
+        },
+      });
+
+      console.log(`✓ ZIP blob generated. Size: ${zipBlob.size} bytes`);
+      console.log("ZIP blob type:", zipBlob.type);
+
+      // Try download
+      console.log("Attempting download with saveAs...");
+      saveAs(zipBlob, "web-project.zip");
+      console.log("✓ saveAs function called");
+
+      // Show success message
+      this.showNotification("Project download started!");
+    } catch (error) {
+      console.error("❌ Download failed:", error);
+      console.error("Error stack:", error.stack);
+
+      // Try fallback method
+      console.log("Trying fallback download method...");
+      try {
+        await this.fallbackDownload();
+      } catch (fallbackError) {
+        console.error("❌ Fallback also failed:", fallbackError);
+        this.showNotification(
+          `Download failed: ${fallbackError.message}`,
+          "error"
+        );
+      }
+    }
+
+    console.log("=== DOWNLOAD PROJECT COMPLETE ===");
+  }
+
+  async fallbackDownload() {
+    console.log("=== FALLBACK DOWNLOAD METHOD ===");
+
+    const zip = new JSZip();
+
+    // Add files
+    for (const [fileName, fileData] of Object.entries(this.projectFiles)) {
+      zip.file(fileName, fileData.content);
+    }
+
+    // Generate blob
+    const content = await zip.generateAsync({ type: "blob" });
+    console.log("Fallback ZIP generated, size:", content.size);
+
+    // Create blob URL
+    const blobUrl = URL.createObjectURL(content);
+    console.log("Blob URL created:", blobUrl);
+
+    // Create and trigger download link
+    const downloadLink = document.createElement("a");
+    downloadLink.href = blobUrl;
+    downloadLink.download = "web-project-fallback.zip";
+    downloadLink.style.display = "none";
+
+    // Add click handler for debugging
+    downloadLink.onclick = function () {
+      console.log("Download link clicked!");
+      return true;
+    };
+
+    console.log("Adding download link to DOM...");
+    document.body.appendChild(downloadLink);
+
+    console.log("Triggering click...");
+    downloadLink.click();
+
+    // Alternative trigger methods
+    setTimeout(() => {
+      console.log("Trying alternative trigger...");
+      const clickEvent = new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      });
+      downloadLink.dispatchEvent(clickEvent);
+    }, 100);
+
+    // Cleanup
+    setTimeout(() => {
+      console.log("Cleaning up...");
+      if (document.body.contains(downloadLink)) {
+        document.body.removeChild(downloadLink);
+      }
+      URL.revokeObjectURL(blobUrl);
+    }, 5000);
+
+    this.showNotification("Fallback download attempted");
+  }
+
+  // Simple test method to verify download works
+  testSimpleDownload() {
+    console.log("Testing simple download...");
+
+    // Test 1: Simple text file
+    const testContent =
+      "This is a test file created at " + new Date().toISOString();
+    const testBlob = new Blob([testContent], { type: "text/plain" });
+
+    if (typeof saveAs !== "undefined") {
+      console.log("Testing saveAs with simple file...");
+      saveAs(testBlob, "simple-test.txt");
+    } else {
+      console.log("saveAs not available, using manual method...");
+      const url = URL.createObjectURL(testBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "simple-test-manual.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  // Add this method to create a fallback download button
+  createFallbackDownloadButton() {
+    const previewHeader = document.querySelector(".preview-header");
+    if (previewHeader) {
+      const downloadBtn = document.createElement("button");
+      downloadBtn.id = "downloadProjectBtn";
+      downloadBtn.className = "download-btn";
+      downloadBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-15"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Download Project
+    `;
+
+      previewHeader.appendChild(downloadBtn);
+
+      downloadBtn.addEventListener("click", () => {
+        console.log("Fallback download button clicked");
+        this.downloadProject();
+      });
+    }
+  }
+
+  // // Replace the downloadProject method with this updated version
+  // async downloadProject() {
+  //   console.log("Starting project download...");
+
+  //   try {
+  //     // Check if required libraries are available
+  //     if (typeof JSZip === 'undefined') {
+  //       throw new Error('JSZip library not loaded');
+  //     }
+  //     if (typeof saveAs === 'undefined') {
+  //       throw new Error('FileSaver library not loaded');
+  //     }
+
+  //     const zip = new JSZip();
+  //     console.log("JSZip instance created");
+
+  //     // Add files to ZIP
+  //     let fileCount = 0;
+  //     for (const [fileName, fileData] of Object.entries(this.projectFiles)) {
+  //       console.log(`Adding file: ${fileName}`);
+  //       zip.file(fileName, fileData.content);
+  //       fileCount++;
+  //     }
+
+  //     console.log(`Added ${fileCount} files to zip`);
+
+  //     // Generate ZIP blob using the modern async API
+  //     console.log("Generating ZIP blob...");
+  //     const content = await zip.generateAsync({
+  //       type: "blob",
+  //       compression: "DEFLATE",
+  //       compressionOptions: {
+  //         level: 6
+  //       }
+  //     });
+
+  //     console.log("ZIP blob generated, size:", content.size);
+
+  //     // Use FileSaver.js to download
+  //     saveAs(content, "web-project.zip");
+  //     console.log("Download initiated");
+
+  //     this.showNotification("Project downloaded successfully");
+  //   } catch (error) {
+  //     console.error("Download error:", error);
+  //     this.showNotification(`Error downloading project: ${error.message}`, "error");
+
+  //     // Fallback: try the old method
+  //     this.fallbackDownload();
+  //   }
+  // }
+
+  // Enhanced download method with extensive debugging
+  // Replace your downloadProject method with this version
+
+  async downloadProject() {
+    console.log("=== DOWNLOAD PROJECT DEBUG START ===");
+
+    try {
+      // Step 1: Check libraries
+      console.log("Checking libraries...");
+      if (typeof JSZip === "undefined") {
+        console.error("JSZip not available");
+        alert("JSZip library not loaded. Please refresh the page.");
+        return;
+      }
+      if (typeof saveAs === "undefined") {
+        console.error("saveAs not available");
+        alert("FileSaver library not loaded. Please refresh the page.");
+        return;
+      }
+      console.log("✓ Libraries available");
+
+      // Step 2: Check project files
+      console.log("Checking project files...");
+      console.log("Project files:", Object.keys(this.projectFiles));
+      if (Object.keys(this.projectFiles).length === 0) {
+        throw new Error("No files to download");
+      }
+
+      // Step 3: Create ZIP
+      console.log("Creating ZIP...");
+      const zip = new JSZip();
+
+      let fileCount = 0;
+      for (const [fileName, fileData] of Object.entries(this.projectFiles)) {
+        console.log(
+          `Adding file: ${fileName}, content length: ${fileData.content.length}`
+        );
+        zip.file(fileName, fileData.content);
+        fileCount++;
+      }
+      console.log(`✓ Added ${fileCount} files to ZIP`);
+
+      // Step 4: Generate ZIP blob
+      console.log("Generating ZIP blob...");
+      const content = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: {
+          level: 6,
+        },
+      });
+
+      console.log(`✓ ZIP generated, size: ${content.size} bytes`);
+
+      // Step 5: Attempt download
+      console.log("Attempting download...");
+
+      // Method 1: Try saveAs first
+      try {
+        console.log("Trying saveAs method...");
+        saveAs(content, "web-project.zip");
+        console.log("✓ saveAs called successfully");
+        this.showNotification("Project download initiated");
+      } catch (saveAsError) {
+        console.error("saveAs failed:", saveAsError);
+        throw saveAsError;
+      }
+    } catch (error) {
+      console.error("Primary download failed:", error);
+      console.log("Attempting fallback method...");
+
+      // Fallback: Manual blob URL method
+      try {
+        await this.fallbackDownloadMethod();
+      } catch (fallbackError) {
+        console.error("Fallback download also failed:", fallbackError);
+        this.showNotification(
+          `Download failed: ${fallbackError.message}`,
+          "error"
+        );
+      }
+    }
+
+    console.log("=== DOWNLOAD PROJECT DEBUG END ===");
+  }
+
+  // Enhanced fallback download method
+  async fallbackDownloadMethod() {
+    console.log("=== FALLBACK DOWNLOAD START ===");
+
+    const zip = new JSZip();
+
+    // Add files
+    for (const [fileName, fileData] of Object.entries(this.projectFiles)) {
+      zip.file(fileName, fileData.content);
+    }
+
+    // Generate blob
+    const content = await zip.generateAsync({ type: "blob" });
+    console.log("Fallback ZIP generated, size:", content.size);
+
+    // Create download link manually
+    const blobUrl = URL.createObjectURL(content);
+    console.log("Blob URL created:", blobUrl);
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = blobUrl;
+    downloadLink.download = "web-project.zip";
+    downloadLink.style.display = "none";
+
+    // Add to DOM
+    document.body.appendChild(downloadLink);
+    console.log("Download link added to DOM");
+
+    // Trigger click
+    console.log("Triggering download...");
+    downloadLink.click();
+
+    // Cleanup
+    setTimeout(() => {
+      console.log("Cleaning up...");
+      if (document.body.contains(downloadLink)) {
+        document.body.removeChild(downloadLink);
+      }
+      URL.revokeObjectURL(blobUrl);
+      console.log("✓ Cleanup completed");
+    }, 1000);
+
+    this.showNotification("Download initiated (fallback method)");
+    console.log("=== FALLBACK DOWNLOAD END ===");
+  }
+
+  // Alternative download method using data URL (for testing)
+  async downloadProjectDataURL() {
+    console.log("=== DATA URL DOWNLOAD START ===");
+
+    try {
+      const zip = new JSZip();
+
+      for (const [fileName, fileData] of Object.entries(this.projectFiles)) {
+        zip.file(fileName, fileData.content);
+      }
+
+      // Generate as base64
+      const content = await zip.generateAsync({
+        type: "base64",
+      });
+
+      console.log("Base64 ZIP generated, length:", content.length);
+
+      // Create data URL
+      const dataUrl = "data:application/zip;base64," + content;
+
+      // Try to download using data URL
+      const downloadLink = document.createElement("a");
+      downloadLink.href = dataUrl;
+      downloadLink.download = "web-project.zip";
+      downloadLink.style.display = "none";
+
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      this.showNotification("Download initiated (data URL method)");
+      console.log("✓ Data URL download completed");
+    } catch (error) {
+      console.error("Data URL download failed:", error);
+      throw error;
+    }
+
+    console.log("=== DATA URL DOWNLOAD END ===");
+  }
+
+  // Add this method to test different download approaches
+  testAllDownloadMethods() {
+    console.log("Testing all download methods...");
+
+    // Test 1: Simple file download
+    const testContent = "Hello World Test File";
+    const testBlob = new Blob([testContent], { type: "text/plain" });
+
+    if (typeof saveAs !== "undefined") {
+      console.log("Test 1: Simple saveAs");
+      saveAs(testBlob, "test.txt");
+    }
+
+    // Test 2: Manual blob URL
+    setTimeout(() => {
+      console.log("Test 2: Manual blob URL");
+      const blobUrl = URL.createObjectURL(testBlob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "test-manual.txt";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    }, 2000);
+
+    // Test 3: Data URL
+    setTimeout(() => {
+      console.log("Test 3: Data URL");
+      const dataUrl =
+        "data:text/plain;charset=utf-8," + encodeURIComponent(testContent);
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "test-data.txt";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }, 4000);
+  }
+
+  // Fallback download method using blob URLs
+  async fallbackDownload() {
+    console.log("Attempting fallback download method...");
+
+    try {
+      const zip = new JSZip();
+
+      // Add files to ZIP
+      for (const [fileName, fileData] of Object.entries(this.projectFiles)) {
+        zip.file(fileName, fileData.content);
+      }
+
+      // Generate ZIP blob
+      const content = await zip.generateAsync({ type: "blob" });
+
+      // Create blob URL and download link
+      const blobUrl = URL.createObjectURL(content);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = blobUrl;
+      downloadLink.download = "web-project.zip";
+      downloadLink.style.display = "none";
+
+      // Append to body, click, and remove
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+
+      // Clean up after a short delay
+      setTimeout(() => {
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
+
+      this.showNotification(
+        "Project downloaded successfully (fallback method)"
+      );
+    } catch (error) {
+      console.error("Fallback download error:", error);
+      this.showNotification(`Download failed: ${error.message}`, "error");
+    }
+  }
+
+  // Enhanced downloadFile method
+  downloadFile(fileName) {
+    if (!this.projectFiles[fileName]) {
+      this.showNotification("File not found", "error");
+      return;
+    }
+
+    try {
+      console.log(`Downloading single file: ${fileName}`);
+
+      // Create a blob with the file content
+      const mimeType = this.getMimeType(fileName);
+      const blob = new Blob([this.projectFiles[fileName].content], {
+        type: mimeType,
+      });
+
+      // Use FileSaver if available, otherwise fallback
+      if (typeof saveAs !== "undefined") {
+        saveAs(blob, fileName);
+      } else {
+        // Fallback method
+        const blobUrl = URL.createObjectURL(blob);
+        const downloadLink = document.createElement("a");
+        downloadLink.href = blobUrl;
+        downloadLink.download = fileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(blobUrl);
+      }
+
+      this.showNotification(`${fileName} downloaded successfully`);
+    } catch (error) {
+      console.error(`Error downloading ${fileName}:`, error);
+      this.showNotification(
+        `Error downloading file: ${error.message}`,
+        "error"
+      );
     }
   }
 
